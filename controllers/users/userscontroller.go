@@ -35,7 +35,7 @@ func GetAllUsers(c *gin.Context) {
 
 func GetUserById(c *gin.Context) {
 	var id bson.ObjectId = bson.ObjectIdHex(c.Param("id"))
-	user, err := user.UserInfo(id, UserCollection)
+	user, err := user.GetUserById(id, UserCollection)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errorInvalidId.Error()})
 		return 
@@ -66,7 +66,7 @@ func CreateUser(c *gin.Context) {
 func UpdateUser(c *gin.Context) {
 	db := conn.GetMongoDB()
 	var id bson.ObjectId = bson.ObjectIdHex(c.Param("id"))
-	existingUser, err := user.UserInfo(id, UserCollection)
+	existingUser, err := user.GetUserById(id, UserCollection)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errorInvalidId.Error()})
 		return

@@ -10,6 +10,7 @@ import (
 type User struct {
     ID        bson.ObjectId `bson:"_id"`
     Name      string        `bson:"name"`
+    username  string        `bson:"username"`
     Address   string        `bson:"address"`
     Age       int           `bson:"age"`
     CreatedAt time.Time     `bson:"created_at"`
@@ -17,11 +18,21 @@ type User struct {
 }
 // Users list
 type Users []User
-// UserInfo model function
-func UserInfo(id bson.ObjectId, userCollection string) (User, error) {
+// GetUserById model function
+func GetUserById(id bson.ObjectId, userCollection string) (User, error) {
     // Get DB from Mongo Config
     db := conn.GetMongoDB()
     user := User{}
     err := db.C(userCollection).Find(bson.M{"_id": &id}).One(&user)
     return user, err
+}
+
+// GetUserByUsername model function
+func GetUserByUsername(username string, userCollection string) (User, error) {
+
+    db := conn.GetMongoDB()
+    user := User{}
+    err := db.C(userCollection).Find({"username": &username}).One(&user)
+    return user, err
+
 }
