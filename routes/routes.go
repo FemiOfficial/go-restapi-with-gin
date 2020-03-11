@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	user "go-rest-with-gin/controllers/users"
+	auth "go-rest-with-gin/controllers/auth"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,7 +14,7 @@ func StartApp() {
 		api.GET("/users", user.GetAllUsers)
 		// api.POST("/users", user.CreateUser)
 		api.GET("/users/:id", user.GetUserById)
-		api.POST("/login", user.LoginUser)
+		api.POST("/login", auth.Login)
 		api.PUT("/users/:id", user.UpdateUser)
 		api.DELETE("/users/:id", user.DeleteUser)
 	}

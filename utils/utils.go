@@ -2,15 +2,14 @@ package utils
 
 import (
 	"log"
-	"fmt"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func convertStrToByte(str string) []byte {
+func ConvertStrToByte(str string) []byte {
 	return []byte(str)
 }
 
-func hashPassword(pwd []byte) string {
+func HashPassword(pwd []byte) string {
   hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost);
   if err != nil {
     log.Fatal(err)
@@ -18,7 +17,7 @@ func hashPassword(pwd []byte) string {
   return string(hash)
 }
 
-func verifyPassword(pwdhash string, plainpassword []byte) bool {
+func VerifyPassword(pwdhash string, plainpassword []byte) bool {
   bytehash := []byte(pwdhash);
   err := bcrypt.CompareHashAndPassword(bytehash, plainpassword)
   if err != nil {

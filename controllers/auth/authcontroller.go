@@ -3,21 +3,14 @@ package auth
 import (
 	"errors"
 	"net/http"
-	"time"
-	"go-rest-with-gin/conn"
+	"go-rest-with-gin/utils"
 	user "go-rest-with-gin/models"
 	"github.com/gin-gonic/gin"
-	"gopkg.in/mgo.v2/bson"
-	"github.com/dgrijalva/jwt-go"
+	// "github.com/dgrijalva/jwt-go"
 )
 
 
 const UserCollection = "user"
-
-type struct LoginPayload {
-	Username 	string `json:"username"`
-	Password	string	`json:password`
-}
 
 var (
 
@@ -27,9 +20,12 @@ var (
 	errorInvalidBody		= 	errors.New("Invalid Request Body")
 )
 
-func Login(c *gin.Context) {
+type LoginPayload struct {
+	Username 	string `json:"username"`
+	Password	string	`json:"password"`
+}
 
-	db := conn.GetMongoDB()
+func Login(c *gin.Context) {
 
 	var loginpayload LoginPayload
 	error := c.Bind(&loginpayload);
@@ -38,15 +34,18 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	user, err = user.GetUserByUsername(loginpayload.username, )
+	user, err := user.GetUserByUsername(loginpayload.Username, UserCollection)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "false", "message": errFindByUsername.Error()})
 		return
 	}
 
-	if user == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "false", "message": errInvalidUsername.Error()})
+	if !utils.VerifyPassword(user.Password, []byte(loginpayload.Password)) {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "false", "message": errInvalidPassword.Error()})
+		return
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "false", "message": errInvalidPassword.Error()})
 		return
 	}
 

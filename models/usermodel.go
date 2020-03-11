@@ -10,7 +10,8 @@ import (
 type User struct {
     ID        bson.ObjectId `bson:"_id"`
     Name      string        `bson:"name"`
-    username  string        `bson:"username"`
+    Username  string        `bson:"username"`
+    Password  string        `bson:"password"`
     Address   string        `bson:"address"`
     Age       int           `bson:"age"`
     CreatedAt time.Time     `bson:"created_at"`
@@ -32,7 +33,7 @@ func GetUserByUsername(username string, userCollection string) (User, error) {
 
     db := conn.GetMongoDB()
     user := User{}
-    err := db.C(userCollection).Find({"username": &username}).One(&user)
+    err := db.C(userCollection).Find(bson.M{"username": &username}).One(&user)
     return user, err
 
 }

@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"time"
 	"go-rest-with-gin/conn"
+	"go-rest-with-gin/utils"
 	user "go-rest-with-gin/models"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/mgo.v2/bson"
+
 )
 
 const UserCollection = "user"
@@ -55,6 +57,8 @@ func CreateUser(c *gin.Context) {
 	user.ID = bson.NewObjectId()
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
+	bytepassword := utils.ConvertStrToByte(user.Password)
+	user.Password = utils.HashPassword(bytepassword)
 	err = db.C(UserCollection).Insert(user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errInsertionFailed.Error()})
