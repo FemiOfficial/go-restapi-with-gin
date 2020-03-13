@@ -4,12 +4,13 @@ import (
 	"errors"
 	"net/http"
 	"time"
-	"go-rest-with-gin/conn"
+	// "log"
+	"go-rest-with-gin/config"
 	"go-rest-with-gin/utils"
 	user "go-rest-with-gin/models"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/mgo.v2/bson"
-
+	// "gopkg.in/validator.v2"
 )
 
 const UserCollection = "user"
@@ -25,7 +26,7 @@ var (
 
 
 func GetAllUsers(c *gin.Context) {
-	db := conn.GetMongoDB()
+	db := config.GetMongoDB()
 	users := user.Users{}
 	err := db.C(UserCollection).Find(bson.M{}).All(&users)
 	if err != nil {
@@ -45,30 +46,37 @@ func GetUserById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "success", "user": &user})
 }
 
-func CreateUser(c *gin.Context) {
+func RegisterUser(c *gin.Context) {
 	// Get DB from Mongo Config
-	db := conn.GetMongoDB()
+	db := config.GetMongoDB()
 	user := user.User{}
-	err := c.Bind(&user)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errorInvalidBody.Error()})
+
+	if error := c.ShouldBind(&user); error != nil {
+		// log.Fatal(error)
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed",
+		"message": errorInvalidBody.Error()})
 		return
 	}
+
 	user.ID = bson.NewObjectId()
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 	bytepassword := utils.ConvertStrToByte(user.Password)
 	user.Password = utils.HashPassword(bytepassword)
-	err = db.C(UserCollection).Insert(user)
+
+
+	err := db.C(UserCollection).Insert(user)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errInsertionFailed.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "success", "user": &user})
+	return
 }
 
 func UpdateUser(c *gin.Context) {
-	db := conn.GetMongoDB()
+	db := config.GetMongoDB()
 	var id bson.ObjectId = bson.ObjectIdHex(c.Param("id"))
 	existingUser, err := user.GetUserById(id, UserCollection)
 	if err != nil {
@@ -94,7 +102,7 @@ func UpdateUser(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-	db := conn.GetMongoDB()
+	db := config.GetMongoDB()
 	var id bson.ObjectId = bson.ObjectIdHex(c.Param("id"))
 	err := db.C(UserCollection).Remove(bson.M{"_id": &id})
 	if err != nil {

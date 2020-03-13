@@ -12,7 +12,7 @@ func StartApp() {
 	api := router.Group("/api") 
 	{
 		api.GET("/users", user.GetAllUsers)
-		// api.POST("/users", user.CreateUser)
+		api.POST("/register", user.RegisterUser)
 		api.GET("/users/:id", user.GetUserById)
 		api.POST("/login", auth.Login)
 		api.PUT("/users/:id", user.UpdateUser)
@@ -21,5 +21,5 @@ func StartApp() {
 	router.NoRoute(func (c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "success", "message": "app is running"})
 	})
-	router.Run(":8000")
+	router.Run(":8002")
 }

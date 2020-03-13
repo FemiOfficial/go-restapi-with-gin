@@ -3,8 +3,9 @@ package auth
 import (
 	"errors"
 	"net/http"
+	"log"
 	"go-rest-with-gin/utils"
-	user "go-rest-with-gin/models"
+	usermodel "go-rest-with-gin/models"
 	"github.com/gin-gonic/gin"
 	// "github.com/dgrijalva/jwt-go"
 )
@@ -21,23 +22,33 @@ var (
 )
 
 type LoginPayload struct {
-	Username 	string `json:"username"`
-	Password	string	`json:"password"`
+	Username 	string `form:"username" json:"username" binding:"required"`
+	Password	string	`form:"password" json:"password" binding:"required"`
 }
+
+// type AuthDetails struct {
+//   Name		string			`json:"name"`
+//   Username	string			`json:"username"`
+//   Address	string			`json:"address"`
+//   Age		int				`json:"age"`
+// }
+
 
 func Login(c *gin.Context) {
 
 	var loginpayload LoginPayload
-	error := c.Bind(&loginpayload);
+
+	error := c.ShouldBind(&loginpayload);
+
 	if error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "false", "message": errorInvalidBody.Error()})
 		return
 	}
 
-	user, err := user.GetUserByUsername(loginpayload.Username, UserCollection)
+	user, err := usermodel.GetUserByUsername(loginpayload.Username, UserCollection)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "false", "message": errFindByUsername.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"status": "false", "message": errInvalidUsername.Error()})
 		return
 	}
 
@@ -45,12 +56,20 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "false", "message": errInvalidPassword.Error()})
 		return
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "false", "message": errInvalidPassword.Error()})
+
+		tokenPayload := utils.AuthDetails{ user.Name, user.Username, user.Address, user.Age }
+		token, err := utils.CreateToken(tokenPayload)
+
+		if(err != nil) {
+			log.Fatal(err)
+		}
+
+		// log.Fatal(token)
+
+		c.JSON(http.StatusOK, gin.H{"status": "false",
+		"message": "success login","token": token, "data": tokenPayload})
 		return
 	}
-
-
-
 
 
 }
